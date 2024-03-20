@@ -1,0 +1,99 @@
+#!/bin/python3
+
+import os
+import sys
+import time
+
+def parse_config_file():
+    file_stream = open("/etc/rsync-backup/rsync-backup.conf")
+    contents = file_stream.readlines()
+
+    config = {
+        "username": "",
+        "server": "",
+        "location" : "",
+        "backup-location": "",
+        "excludes": []
+    }
+
+    is_parsing_excludes = 0
+
+    for line in contents:
+        if line.split('=')[0] == "username":
+            config["username"] = line.split('=')[1].replace("\n", "")
+        if line.split('=')[0] == "server":
+            config["server"] = line.split('=')[1].replace("\n", "")
+        if line.split('=')[0] == "location":
+            config["location"] = line.split('=')[1].replace("\n", "")
+        if line.split('=')[0] == "backup-location":
+            config["backup-location"] = line.split('=')[1].replace("\n", "")
+        if line.split('=')[0] == "excludes":
+            is_parsing_excludes = 1
+            continue
+        
+        if is_parsing_excludes:
+            if line.replace("\n", "") == "}":
+                is_parsing_excludes = 0
+                break
+            config["excludes"].append(line.replace("\n", "").strip())
+
+    return config
+
+def print_safe_password(password):
+    for i in range(3):
+        print(password[i], end="")
+    for i in range(len(password) - 3):
+        print("*", end="")
+
+    print("")
+
+
+def sync():
+    config = parse_config_file()
+
+    backup_location = config["backup-location"]
+    username = config["username"]
+    server = config["server"]
+    location = config["location"]
+
+    print("About to backup with settings: ")
+    print(f"Folder to backup:       {backup_location}")
+    print(f"Username:               {username}")
+    print(f"Location to server:     {location}")
+    print(f"Server:                 {server}")
+    print("And exclude the folowing file(s) or folder(s):")
+    for i in config["excludes"]:
+        print(f"     {i}")
+
+    choice = input("\nIs this ok? [y/N]: ")
+
+    if choice.lower()[0] == "y":
+        command = f"sudo rsync -av "
+
+        for i in config["excludes"]:
+            command += f"--exclude=\"{i}\" "
+
+        command = f"{command}--delete '{backup_location}' '{username}@{server}:{location}'"
+
+        for i in range(3, 1):
+            print(f"{i}", end="")
+            time.sleep(1)
+
+        os.system(command)
+    else:
+        print("Operation canceled.")
+        exit()
+
+def main():
+    mode = ""
+
+    for i in range(1, len(sys.argv)):
+        if sys.argv[i] == "sync":
+            mode = "sync"
+            break
+    
+    if mode == "sync":
+        sync()
+
+if __name__ == "__main__":
+    main()
