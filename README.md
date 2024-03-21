@@ -19,3 +19,22 @@ excludes={
 ```shell
 ./install.sh
 ```
+#### Dependecies:
+```
+ssh
+sshpass
+rsync
+python3
+```
+Debian (also systems like ubuntu, mint etc.):
+```
+sudo apt install ssh sshpass rsync python3
+```
+Arch linux:
+```
+sudo pacman -S ssh sshpass rsync python3
+```
+Redhat (also systems like fedora):
+```
+sudo dnf install ssh sshpass rsync python3
+```
