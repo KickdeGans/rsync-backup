@@ -7,6 +7,7 @@ rsync-backup sync
 ### Example config:
 ```config
 username=user
+password=myPassword
 location=/my-backup
 backup-location=/home/user/
 server=123.123.123.123
