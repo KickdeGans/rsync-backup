@@ -21,6 +21,8 @@ def parse_config_file():
     for line in contents:
         if line.split('=')[0] == "username":
             config["username"] = line.split('=')[1].replace("\n", "")
+        if line.split('=')[0] == "password":
+            config["password"] = line.split('=')[1].replace("\n", "")
         if line.split('=')[0] == "server":
             config["server"] = line.split('=')[1].replace("\n", "")
         if line.split('=')[0] == "location":
@@ -55,10 +57,13 @@ def sync():
     username = config["username"]
     server = config["server"]
     location = config["location"]
+    password = config["password"]
 
     print("About to backup with settings: ")
     print(f"Folder to backup:       {backup_location}")
     print(f"Username:               {username}")
+    print(f"Password:               ", end="")
+    print_safe_password(password)
     print(f"Location to server:     {location}")
     print(f"Server:                 {server}")
     print("And exclude the folowing file(s) or folder(s):")
@@ -68,7 +73,7 @@ def sync():
     choice = input("\nIs this ok? [y/N]: ")
 
     if choice.lower()[0] == "y":
-        command = f"sudo rsync -av "
+        command = f"sshpass -p \"{password}\" sudo rsync -av "
 
         for i in config["excludes"]:
             command += f"--exclude=\"{i}\" "
